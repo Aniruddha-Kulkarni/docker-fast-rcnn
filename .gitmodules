@@ -1,0 +1,3 @@
+[submodule "selective_search"]
+	path = selective_search
+	url = https://github.com/lazyc97/selective-search.git

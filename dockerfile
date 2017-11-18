@@ -1,11 +1,13 @@
-FROM nvidia/cuda:9.0-devel-ubuntu16.04
-ENV FCRNN_ROOT=/cv/fast-rcnn
+FROM ubuntu:16.04
+ENV SS_ROOT=/cv
+ENV FCRNN_ROOT=${SS_ROOT}/fast-rcnn
 ENV CAFFE_ROOT=${FCRNN_ROOT}/caffe-fast-rcnn
+ENV DISPLAY=:0
 
 # dependencies
-RUN apt update
-
-RUN apt-get install -y --no-install-recommends \
+RUN apt update && \
+    apt-get install -y --no-install-recommends \
+    x11-apps \
     build-essential \
     cmake \
     git \
@@ -23,6 +25,7 @@ RUN apt-get install -y --no-install-recommends \
     libopencv-dev \
     protobuf-compiler \
     bc \
+    libopenblas-dev \
     python-dev \
     python-numpy \
     python-pip \
@@ -31,18 +34,13 @@ RUN apt-get install -y --no-install-recommends \
     python-tk && \
     rm -rf /var/lib/apt/lists/*
 
+COPY ./selective_search/fast-rcnn/caffe-fast-rcnn/python/requirements.txt /requirements.txt
 RUN pip install --upgrade pip && \
-    pip install cython opencv-python easydict
+    pip install -U jupyter cython opencv-python easydict scikit-learn scikit-image && \
+    pip install -r /requirements.txt
 
 # clone
-RUN git clone --recursive https://github.com/rbgirshick/fast-rcnn.git ${FCRNN_ROOT}
-RUN pip install -r ${CAFFE_ROOT}/python/requirements.txt
-
-# get data
-VOLUME ${CAFFE_ROOT}/data/scripts
-RUN cd ${FCRNN_ROOT}/data/scripts && \
-    ./fetch_fast_rcnn_models.sh && \
-    ./fetch_fast_rcnn_models.sh
+COPY ./selective_search ${SS_ROOT}
 
 # copy config file
 COPY ./Makefile.config ${CAFFE_ROOT}
@@ -60,8 +58,7 @@ RUN cd ${CAFFE_ROOT} && \
     make pycaffe
 
 # set workdir
-WORKDIR ${FCRNN_ROOT}
+WORKDIR ${SS_ROOT}
 
-# X-server
-RUN apt update && apt install -y x11-apps
-ENV DISPLAY=:0
+# copy custom data
+COPY data ${SS_ROOT}/Data/img
