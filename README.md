@@ -3,6 +3,8 @@ A docker image for [fast-rcnn](https://github.com/rbgirshick/fast-rcnn) building
 
 ## Build & Run
 ```bash
+git clone --recursive https://github.com/lazyc97/docker-fast-rcnn.git
+cd docker-fast-rcnn
 ./build.sh && ./run.sh
 ```
 
